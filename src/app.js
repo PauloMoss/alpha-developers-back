@@ -31,15 +31,20 @@ app.post("/sign-up", async (req, res) => {
         if(err) {
             return res.sendStatus(400)
         }
-        const { name, email, password, cpf, rg } = req.body;
+        const { name, email, password, cpf, rg, address, city, state } = req.body;
 
         const cryptPassword = bcrypt.hashSync(password, 10);
 
-        await connection.query(`
+        const user = await connection.query(`
             INSERT INTO users (name, email, password, cpf, rg) 
-            VALUES ($1, $2, $3, $4, $5)
+            VALUES ($1, $2, $3, $4, $5) RETURNING id
         `, [name, email, cryptPassword, cpf, rg]);
-        
+
+        await connection.query(`
+            INSERT INTO addresses ("userId", address, city, state) 
+            VALUES ($1, $2, $3, $4)
+        `, [user.rows[0].id, address, city, state]);
+
         res.sendStatus(201);
     } catch(e) {
         console.log(e);
