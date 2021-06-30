@@ -3,9 +3,10 @@ import cors from 'cors';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { stripHtml } from "string-strip-html";
+import {fillProducts, fake_data} from "./tests/utils"; //remove before send to production!
 
 import connection from './database.js';
-import { signUpSchema } from './schemas/usersSchemas.js';
+import { signUpSchema, loginSchema } from './schemas/usersSchemas.js';
 
 
 const app = express();
@@ -52,41 +53,54 @@ app.post("/sign-up", async (req, res) => {
         res.sendStatus(500);
     }
 })
-//apenas para testes do front-end
-app.post("/insert_fake_products",(req,res)=>{
-    const fake_data = [
-        {
-            id: 1,
-            name: "Avell A72 LIV - Prata",
-            price: 699993,
-            description: "Intel® Core™ i5-10750H (10ª. Ger. Até 5.0 GHZ);Tela 15.6” Full HD WVA 120Hz;GeForce™ GTX 1650Ti (4GB GDDR6);16GB de RAM DDR4;500GB SSD NVME;Apenas 2.1Kg;",
-            image: 'https://images.avell.com.br/media/catalog/product/cache/1/small_image/350x262/9df78eab33525d08d6e5fb8d27136e95/a/5/a52_6__2.jpg',        
-            inStock: 0
-        },
-        {
-            id: 2,
-            name: "Avell A62 LIV - Preto", 
-            price: 1799993,
-            description: "Intel® Core™ i7-10750H (10ª. Ger. Até 5.0 GHZ);Tela 15.6” Full HD WVA 120Hz;GeForce™ GTX 1650Ti (4GB GDDR6);32GB de RAM DDR4;500GB SSD NVME;Apenas 2.1Kg;",
-            image: 'https://images.avell.com.br/media/catalog/product/cache/1/small_image/350x262/9df78eab33525d08d6e5fb8d27136e95/a/6/a60-_12_.jpg',        
-            inStock: 3
-        },
-        {
-            id: 3,
-            name: "Avell A52 LIV - branco", 
-            price: 599993,
-            description: "Intel® Core™ i3-10750H (10ª. Ger. Até 5.0 GHZ);Tela 15.6” Full HD WVA 120Hz;GeForce™ GTX 1650Ti (4GB GDDR6);8GB de RAM DDR4;500GB SSD NVME;Apenas 2.1Kg;",
-            image: 'https://images7.kabum.com.br/produtos/fotos/131367/notebook-samsung-book-x30-intel-core-i5-10210u-8gb-1tb-tela-15-6-windows-10-home-branco-np550xcj-kf2br_1605290217_g.jpg',        
-            inStock: 5
+
+app.post("/login", async (req,res) => {
+    try {
+        req.body.email = stripHtml(req.body.email).result.trim();
+        
+        const err = loginSchema.validate(req.body).error;
+        if(err) {
+            console.log(err)
+            return res.sendStatus(400);
         }
-    ]
-    fake_data.forEach(async({id,name,price,description,image,inStock})=>{
+
+        const { email, password } = req.body
         const result = await connection.query(`
-        INSERT INTO products
-        (id, name, price, description, image, "inStock") 
-        VALUES ($1,$2,$3,$4,$5,$6)
-    `,[id,name,price,description,image,inStock]);
-    });
+            SELECT * FROM users 
+            WHERE email = $1
+        `, [email]);
+        const user = result.rows[0];
+
+        if(user && bcrypt.compareSync(password, user.password)) {
+            const secretKey = process.env.JWT_SECRET;
+
+            const session = await connection.query(`
+                INSERT INTO sessions ("userId")
+                VALUES ($1) RETURNING id
+            `, [user.id]);
+
+            const dados = { userId: user.id, sessionId: session.rows[0].id }
+            const token = jwt.sign(dados, secretKey, { expiresIn: 60*60*24*30 });
+
+            await connection.query(`
+                UPDATE sessions SET token = $1 WHERE id = $2;
+            `, [token, session.rows[0].id]);
+
+            delete user.password;
+            res.send({id: user.id, name: user.name, email: user.email, token });
+
+        } else {
+            res.sendStatus(401);
+        }
+    } catch(e) {
+        console.log(e);
+        res.sendStatus(500);
+    }
+})
+
+//populate products db - use for front-end test; ! remove before send to production !
+app.post("/insert_fake_products",(req,res)=>{
+    fillProducts(fake_data);
     res.sendStatus(201);
 })
 
