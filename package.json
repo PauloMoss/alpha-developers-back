@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "server": "npx nodemon ./src/server.js",
+    "test": "NODE_ENV=test npx jest -i"
   },
   "keywords": [],
   "author": "",
