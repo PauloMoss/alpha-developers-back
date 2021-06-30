@@ -8,10 +8,10 @@ const poolConfig = {
 	password: process.env.DB_PASSWORD,
 	port: process.env.DB_PORT,
 	database: process.env.NODE_ENV === "test" ? process.env.DB_DATABASE_TEST : process.env.DB_DATABASE,
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false
-    }
+    // connectionString: process.env.DATABASE_URL,
+    // ssl: {
+    //     rejectUnauthorized: false
+    // }
 }
 
 const connection = new Pool(poolConfig);
