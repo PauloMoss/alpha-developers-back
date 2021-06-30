@@ -57,6 +57,6 @@ async function login () {
     });
   }
 
-export {fake_data, login, fillProducts}
+export {login, fillProducts, fake_data}
 
     
