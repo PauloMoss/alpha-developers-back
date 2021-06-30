@@ -50,8 +50,10 @@ app.post("/sign-up", async (req, res) => {
         console.log(e);
         res.sendStatus(500);
     }
+})
 
-
+app.get("/test", (req,res) => {
+    res.send("testado")
 })
 
 export default app;
