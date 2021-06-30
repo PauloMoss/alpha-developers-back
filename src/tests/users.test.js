@@ -43,38 +43,43 @@ describe("POST /sign-up", () => {
     })
 
     it("returns 400 for empty params", async () => {
-        body = { name: '', email: '', password: '', confirmPassword: '', cpf: '', rg: '', address: '', city: '', state: '' };
-        const result = await supertest(app).post("/sign-up").send(body);
+        const emptyBody = { name: '', email: '', password: '', confirmPassword: '', cpf: '', rg: '', address: '', city: '', state: '' };
+        const result = await supertest(app).post("/sign-up").send(emptyBody);
         expect(result.status).toEqual(400)
     })
 
     it("returns 400 for invalid name length", async () => {
         body.name = 'Ze';
         const result = await supertest(app).post("/sign-up").send(body);
-        expect(result.status).toEqual(400)
+        expect(result.status).toEqual(400);
+        body.name = 'anothertest';
     })
 
     it("returns 400 for invalid email", async () => {
-        body.email = 'test.com'
+        body.email = 'test.com';
         const result = await supertest(app).post("/sign-up").send(body);
-        expect(result.status).toEqual(400)
+        expect(result.status).toEqual(400);
+        body.email = 'test@test.com'
     })
 
     it("returns 400 for unmatched passwords", async () => {
         body.confirmPassword = 'justanothertest';
         const result = await supertest(app).post("/sign-up").send(body);
-        expect(result.status).toEqual(400)
+        expect(result.status).toEqual(400);
+        body.confirmPassword = 'anothertest';
     })
 
     it("returns 400 for invalid cpf length", async () => {
         body.cpf = '123.456.789-1';
         const result = await supertest(app).post("/sign-up").send(body);
-        expect(result.status).toEqual(400)
+        expect(result.status).toEqual(400);
+        body.cpf = '123.456.789-10';
     })
 
     it("returns 400 for invalid rg length", async () => {
         body.rg = '12.345.678-90';
         const result = await supertest(app).post("/sign-up").send(body);
-        expect(result.status).toEqual(400)
+        expect(result.status).toEqual(400);
+        body.rg = '12.345.678-9';
     })
 })

@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import { stripHtml } from "string-strip-html";
 
 import connection from './database.js';
@@ -52,8 +53,5 @@ app.post("/sign-up", async (req, res) => {
     }
 })
 
-app.get("/test", (req,res) => {
-    res.send("testado")
-})
 
 export default app;
