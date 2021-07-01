@@ -3,10 +3,10 @@ import cors from 'cors';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { stripHtml } from "string-strip-html";
+import {fillProducts, fake_data} from "./tests/utils.js"; //remove before send to production!
 
 import connection from './database.js';
 import { signUpSchema, loginSchema } from './schemas/usersSchemas.js';
-
 
 const app = express();
 
@@ -97,4 +97,42 @@ app.post("/login", async (req,res) => {
     }
 })
 
+//populate products db - use for front-end test; ! remove before send to production !
+app.post("/insert_fake_products",(req,res)=>{
+    if (req.body){
+        fillProducts(fake_data);
+    }
+    
+    res.sendStatus(201);
+})
+
+app.get("/products", async(req, res)=>{
+    try{
+        const authorization = req.headers['authorization'];
+        const token = authorization?.replace('Bearer ', '');
+
+        if (!authorization || !token){
+            return res.sendStatus(401);
+        }
+
+        const {rows: user} = await connection.query(`
+            SELECT * FROM sessions
+            JOIN users
+            ON sessions."userId" = users.id
+            WHERE sessions.token = $1
+        `, [token]);
+
+        if (user.length === 0){
+            return res.sendStatus(401);
+        }
+
+        const products = await connection.query(`
+            SELECT * FROM products
+        `)
+        res.send(products.rows);
+    }catch(e){
+        console.log(e.error);
+        res.sendStatus(500);
+    };
+});
 export default app;
