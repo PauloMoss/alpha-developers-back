@@ -84,8 +84,7 @@ app.post("/login", async (req,res) => {
             await connection.query(`
                 UPDATE sessions SET token = $1 WHERE id = $2;
             `, [token, session.rows[0].id]);
-
-            delete user.password;
+            
             res.send({id: user.id, name: user.name, email: user.email, token });
 
         } else {
@@ -95,6 +94,13 @@ app.post("/login", async (req,res) => {
         console.log(e);
         res.sendStatus(500);
     }
+});
+
+app.get("/checkout", async (req,res) => {
+
+    const authorization = req.headers['authorization'];
+    const token = authorization?.replace('Bearer ', '');
+    const chaveSecreta = process.env.JWT_SECRET;
 })
 
 export default app;
