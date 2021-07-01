@@ -3,11 +3,10 @@ import cors from 'cors';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { stripHtml } from "string-strip-html";
-import {fillProducts, fake_data} from "./tests/utils"; //remove before send to production!
+import {fillProducts, fake_data} from "./tests/utils.js"; //remove before send to production!
 
 import connection from './database.js';
 import { signUpSchema, loginSchema } from './schemas/usersSchemas.js';
-
 
 const app = express();
 
@@ -100,7 +99,10 @@ app.post("/login", async (req,res) => {
 
 //populate products db - use for front-end test; ! remove before send to production !
 app.post("/insert_fake_products",(req,res)=>{
-    fillProducts(fake_data);
+    if (req.body){
+        fillProducts(fake_data);
+    }
+    
     res.sendStatus(201);
 })
 
@@ -119,7 +121,7 @@ app.get("/products", async(req, res)=>{
             ON sessions."userId" = users.id
             WHERE sessions.token = $1
         `, [token]);
-        
+
         if (user.length === 0){
             return res.sendStatus(401);
         }
@@ -127,7 +129,6 @@ app.get("/products", async(req, res)=>{
         const products = await connection.query(`
             SELECT * FROM products
         `)
-        console.log(products.rows);
         res.send(products.rows);
     }catch(e){
         console.log(e.error);

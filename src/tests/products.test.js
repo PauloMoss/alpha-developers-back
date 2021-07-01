@@ -23,7 +23,6 @@ describe("GET products", () => {
         await fillProducts(fake_data);
 
         const token = await login();
-        console.log("token test",token);
 
         const result = await supertest(app).get("/products").set('Authorization', `Bearer ${token}`);
         expect(result.status).toEqual(200);
