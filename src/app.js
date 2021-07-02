@@ -96,11 +96,89 @@ app.post("/login", async (req,res) => {
     }
 });
 
-app.get("/checkout", async (req,res) => {
+app.post("/checkout", async (req,res) => {
+    try{
+        const authorization = req.headers['authorization'];
+        const token = authorization?.replace('Bearer ', '');
+        const chaveSecreta = process.env.JWT_SECRET;
+        const dados = jwt.verify(token, chaveSecreta);
+        if(dados) {
+            const userCart = req.body;
+    
+            let productsTemplateIds = "";
+            userCart.forEach((c,i) => productsTemplateIds += `${i+1},`);
+        
+            const result = await connection.query(`
+                SELECT * FROM products 
+                WHERE id in (${productsTemplateIds.slice(0,-1)})
+            `);
+            const cartProducts = result.rows;
+            const cartToReturn = cartProducts.map((c,i) => ({...c, orderQuantity: userCart[i].quantity}));
+            res.send(cartToReturn);
+        } else{
+            res.sendStatus(401)
+        }
+    } catch (e){
+        console.log(e)
+        res.sendStatus(500)
+    }
+});
 
+app.post("/purchase", async (req,res) => {
     const authorization = req.headers['authorization'];
     const token = authorization?.replace('Bearer ', '');
     const chaveSecreta = process.env.JWT_SECRET;
+    const dados = jwt.verify(token, chaveSecreta);
+    if(dados) {
+        let purchase = "";
+        const purchaseBag = req.body.cart;
+        purchaseBag.sort((a,b) =>{
+            if(a.id > b.id) return 1;
+            if(a.id < b.id) return -1;
+            return 0;
+        });
+        const productRemainingQuantity = {};
+
+        purchaseBag.forEach(p => {
+            purchase +=`(${p.id},${dados.userId},NOW(),${p.orderQuantity}),`;
+            productRemainingQuantity[p.id] = p.orderQuantity;
+            if(p.instock < p.orderQuantity) {
+                return res.sendStatus(422)
+            }
+        });
+        await connection.query(`
+            INSERT INTO sales 
+            ("productId", "userID", date, quantity) 
+            VALUES ${purchase.slice(0,-1)};
+        `);
+
+        let productsTemplateIds = "";
+        purchaseBag.forEach((c,i) => productsTemplateIds += `${i+1},`);
+
+        const result = await connection.query(`
+            SELECT * FROM products 
+            WHERE id IN (${productsTemplateIds.slice(0,-1)})
+        `);
+
+        let productsInStock = "";
+        result.rows.forEach((c,i) => {
+            productRemainingQuantity[c.id] = c.instock - productRemainingQuantity[c.id];
+            productsInStock += `(${Number(productRemainingQuantity[c.id])}),`
+        });
+
+        await purchaseBag.forEach((p,i) => {
+            connection.query(`
+                UPDATE products 
+                SET instock = ${productRemainingQuantity[p.id]}
+                WHERE id = ${p.id}
+            `);
+        });
+
+        res.sendStatus(200)
+    } else{
+        res.sendStatus(401)
+    }
+
 })
 
 export default app;
