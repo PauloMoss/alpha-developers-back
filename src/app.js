@@ -118,7 +118,6 @@ app.post("/checkout", async (req,res) => {
             let productsTemplateIds = "";
             userCart.forEach(c => productsTemplateIds += `${c.productId},`);
         
-            console.log(productsTemplateIds.slice(0,-1))
             const result = await connection.query(`
                 SELECT * FROM products 
                 WHERE id in (${productsTemplateIds.slice(0,-1)})
