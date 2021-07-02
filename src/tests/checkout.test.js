@@ -23,7 +23,7 @@ beforeEach(async () =>{
 
     const secretKey = process.env.JWT_SECRET;
     const dados = { userId: userId.rows[0].id, sessionId: sessionId.rows[0].id }
-    token = jwt.sign(dados, secretKey, { expiresIn: 30 });
+    token = jwt.sign(dados, secretKey);
 
     await connection.query(`
         UPDATE sessions SET token = $1 WHERE id = $2;
@@ -52,7 +52,7 @@ describe("POST /checkout", () => {
 })
 
 describe("POST /purchase", () => {
-
+    
     it("returns 200 for successful purchase", async () => {
         const body = {cart:[{id:1, orderQuantity: 1, inStock: 10}] }
         const result = await supertest(app).post("/purchase").send(body).set('Authorization',`Bearer ${token}`);

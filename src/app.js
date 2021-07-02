@@ -160,13 +160,17 @@ app.post("/purchase", async (req,res) => {
 
             const productRemainingQuantity = {};
     
+            let outOfStock = false;
             purchaseBag.forEach(p => {
                 purchase +=`(${p.id},${dados.userId},NOW(),${p.orderQuantity}),`;
                 productRemainingQuantity[p.id] = p.orderQuantity;
                 if(p.inStock < p.orderQuantity) {
-                    return res.sendStatus(422)
+                    outOfStock = true;
                 }
             });
+            if(outOfStock) {
+                return res.sendStatus(422);
+            }
             await connection.query(`
                 INSERT INTO sales 
                 ("productId", "userID", date, quantity) 
