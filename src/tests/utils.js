@@ -8,28 +8,28 @@ const fake_products = [
         price: 1222200,
         description: "AMD Ryzen 5 4600H 3.0GHz, Max Boost 4.0GHz;Tela 17.3” QHD 165 Hz Com 100% sRGB;GeForce RTX 3060 (6GB GDDR6);16GB de RAM DDR4;500GB SSD NVME;Apenas 2,55 Kg;",
         image: "https://images.avell.com.br/media/catalog/product/cache/1/small_image/350x262/9df78eab33525d08d6e5fb8d27136e95/s/t/storm_one_2_3_-_copia.jpg",
-        inStock: 1
+        inStock: 0
     },
     {
         name: "Avell A62 LIV - Prata", 
         price: 777700,
         description: "10ª Geração Intel Core i7-10750H (2.6 GHz até 5.0 GHz com Turbo Max);Tela 15.6” Full HD WVA 120Hz;GeForce™ GTX 1650Ti (4GB GDDR6);16GB de RAM DDR4;500GB SSD NVME;Apenas 2.1Kg;",
         image: "https://images.avell.com.br/media/catalog/product/cache/1/small_image/350x262/9df78eab33525d08d6e5fb8d27136e95/a/5/a52_6__2.jpg",
-        inStock: 3
+        inStock: 30
     },
     {
         name: "Avell A52 LIV - preto", 
         price: 644400,
         description: "10ª Geração Intel Core i5-10300H (2.5Ghz Até 4.5Ghz com Turbo Max);Tela 15.6” Full HD WVA 120Hz;GeForce™ GTX 1650Ti (4GB GDDR6);16GB de RAM DDR4;256GB SSD NVME;Apenas 2.1Kg;",
         image: "https://images.avell.com.br/media/catalog/product/cache/1/small_image/350x262/9df78eab33525d08d6e5fb8d27136e95/a/5/a52_7__1_1.jpg",
-        inStock: 0
+        inStock: 1
     },
     {
         name: "Avell A52 LIV - prata", 
         price: 644400,
         description: "10ª Geração Intel Core i5-10300H (2.5Ghz Até 4.5Ghz com Turbo Max);Tela 15.6” Full HD WVA 120Hz;GeForce™ GTX 1650Ti (4GB GDDR6);16GB de RAM DDR4;256GB SSD NVME;Apenas 2.1Kg;",
         image: "https://images.avell.com.br/media/catalog/product/cache/1/small_image/350x262/9df78eab33525d08d6e5fb8d27136e95/a/5/a52_6_.png",
-        inStock: 5
+        inStock: 10
     }
 ]
 const fake_ProductImages = [
