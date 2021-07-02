@@ -3,7 +3,7 @@ import cors from 'cors';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { stripHtml } from "string-strip-html";
-import {fillProducts, fake_data} from "./tests/utils.js"; //remove before send to production!
+import {fillProducts, fake_products, fillProductsImages, fake_ProductImages} from "./tests/utils.js"; //remove before send to production!
 
 import connection from './database.js';
 import { signUpSchema, loginSchema } from './schemas/usersSchemas.js';
@@ -98,13 +98,18 @@ app.post("/login", async (req,res) => {
 })
 
 //populate products db - use for front-end test; ! remove before send to production !
-app.post("/insert_fake_products",(req,res)=>{
+app.post("/insert_fake_products", async (req,res)=>{
     if (req.body){
-        fillProducts(fake_data);
-    }
-    
+        await fillProducts(fake_products);
+    };
     res.sendStatus(201);
 })
+app.post("/insert_fake_products_images", async (req,res)=>{
+    if (req.body){
+        await fillProductsImages(fake_ProductImages);
+    };
+    res.sendStatus(201);
+});
 
 app.get("/products", async(req, res)=>{
     try{
@@ -113,26 +118,80 @@ app.get("/products", async(req, res)=>{
 
         if (!authorization || !token){
             return res.sendStatus(401);
-        }
+        };
+        const userData = jwt.verify(token, process.env.JWT_SECRET);
 
         const {rows: user} = await connection.query(`
             SELECT * FROM sessions
             JOIN users
             ON sessions."userId" = users.id
-            WHERE sessions.token = $1
-        `, [token]);
+            WHERE sessions.id = $1
+        `, [userData.sessionId]);
 
         if (user.length === 0){
             return res.sendStatus(401);
-        }
+        };
 
         const products = await connection.query(`
             SELECT * FROM products
-        `)
+        `);
         res.send(products.rows);
     }catch(e){
         console.log(e.error);
         res.sendStatus(500);
     };
 });
+
+app.get("/product/:id",async(req,res)=>{
+    try{
+        const {id} = req.params;
+        const authorization = req.headers['authorization'];
+        const token = authorization?.replace('Bearer ', '');
+
+        if (!authorization || !token){
+            return res.sendStatus(401);
+        };
+
+        const userData = jwt.verify(token, process.env.JWT_SECRET);
+
+        const {rows: user} = await connection.query(`
+            SELECT * FROM sessions
+            JOIN users
+            ON sessions."userId" = users.id
+            WHERE sessions.id = $1
+        `, [userData.sessionId]);
+
+        if (user.length === 0){
+            return res.sendStatus(401);
+        };
+
+        const product_result = await connection.query(`
+            SELECT * FROM products
+            WHERE id = $1
+        `, [id]);
+
+        if (product_result.rows.length === 0){
+            return res.sendStatus(404);
+        };
+
+        const product = product_result.rows[0];
+      
+        const images_result = await connection.query(`
+            SELECT * FROM images
+            WHERE "productId" = $1
+        `, [id]);
+
+        if (images_result.rows.length === 0){
+            product.images = [product.image]
+        } else {
+            const imagesArray = images_result.rows.map((i)=>(i.image))
+            product.images = imagesArray;
+        };
+        res.send(product).status(200);
+    }catch(e){
+        console.log(e);
+        res.sendStatus(500);
+    };
+});
+
 export default app;
