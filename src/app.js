@@ -119,13 +119,14 @@ app.get("/products", async(req, res)=>{
         if (!authorization || !token){
             return res.sendStatus(401);
         };
+        const userData = jwt.verify(token, process.env.JWT_SECRET);
 
         const {rows: user} = await connection.query(`
             SELECT * FROM sessions
             JOIN users
             ON sessions."userId" = users.id
-            WHERE sessions.token = $1
-        `, [token]);
+            WHERE sessions.id = $1
+        `, [userData.sessionId]);
 
         if (user.length === 0){
             return res.sendStatus(401);
@@ -151,12 +152,14 @@ app.get("/product/:id",async(req,res)=>{
             return res.sendStatus(401);
         };
 
+        const userData = jwt.verify(token, process.env.JWT_SECRET);
+
         const {rows: user} = await connection.query(`
             SELECT * FROM sessions
             JOIN users
             ON sessions."userId" = users.id
-            WHERE sessions.token = $1
-        `, [token]);
+            WHERE sessions.id = $1
+        `, [userData.sessionId]);
 
         if (user.length === 0){
             return res.sendStatus(401);
