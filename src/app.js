@@ -98,11 +98,11 @@ app.post("/login", async (req,res) => {
 
 app.post("/checkout", async (req,res) => {
     try{
+        const authorization = req.headers['authorization'];
+        const token = authorization?.replace('Bearer ', '');
+        const chaveSecreta = process.env.JWT_SECRET;
         const validation = ()=>{
             try{
-                const authorization = req.headers['authorization'];
-                const token = authorization?.replace('Bearer ', '');
-                const chaveSecreta = process.env.JWT_SECRET;
                 return jwt.verify(token, chaveSecreta);
                 
             } catch{
@@ -136,11 +136,11 @@ app.post("/checkout", async (req,res) => {
 
 app.post("/purchase", async (req,res) => {
     try{
+        const authorization = req.headers['authorization'];
+        const token = authorization?.replace('Bearer ', '');
+        const chaveSecreta = process.env.JWT_SECRET;
         const validation = ()=>{
             try{
-                const authorization = req.headers['authorization'];
-                const token = authorization?.replace('Bearer ', '');
-                const chaveSecreta = process.env.JWT_SECRET;
                 return jwt.verify(token, chaveSecreta);
                 
             } catch{

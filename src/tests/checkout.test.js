@@ -53,19 +53,19 @@ describe("POST /checkout", () => {
 
 describe("POST /purchase", () => {
 
+    it("returns 200 for successful purchase", async () => {
+        const body = {cart:[{id:1, orderQuantity: 1, inStock: 10}] }
+        const result = await supertest(app).post("/purchase").send(body).set('Authorization',`Bearer ${token}`);
+        expect(result.status).toEqual(200);
+    })
+
     it("returns 401 for unauthorized user", async () => {
         const result = await supertest(app).post("/purchase").send([]).set('Authorization','Bearer fsefxdr3151dr6g5dxr6');
         expect(result.status).toEqual(401);
     })
 
-    it("returns 200 for successful purchase", async () => {
-        const body = {cart:[{id:1, orderQuantity: 1, instock: 10}] }
-        const result = await supertest(app).post("/purchase").send(body).set('Authorization',`Bearer ${token}`);
-        expect(result.status).toEqual(200);
-    })
-
     it("returns 422 for out of stock products", async () => {
-        const body = {cart:[{id:1, orderQuantity: 2, instock: 1}] }
+        const body = {cart:[{id:1, orderQuantity: 2, inStock: 1}] }
         const result = await supertest(app).post("/purchase").send(body).set('Authorization',`Bearer ${token}`);
         expect(result.status).toEqual(422);
     })

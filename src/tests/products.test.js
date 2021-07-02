@@ -4,7 +4,7 @@ import app from '../app.js';
 import connection from '../database.js';
 import {login, fillProducts, fake_products, fillProductsImages, fake_ProductImages, getProductId} from "./utils.js";
 
-beforeEach(async () =>{
+/*beforeEach(async () =>{
     await connection.query('DELETE FROM products');
     await connection.query('DELETE FROM images');
     await connection.query('DELETE FROM users');
@@ -93,4 +93,4 @@ describe("GET product/:id", () => {
         const result = await supertest(app).get("/products/inexistent_product_id").set('Authorization',`Bearer ${token}`);
         expect(result.status).toEqual(404);
     });
-});
+});*/
