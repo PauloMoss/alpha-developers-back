@@ -116,7 +116,7 @@ app.post("/checkout", async (req,res) => {
                 return res.send([])
             }
             let productsTemplateIds = "";
-            userCart.forEach((c,i) => productsTemplateIds += `${i+1},`);
+            userCart.forEach(c => productsTemplateIds += `${c.productId},`);
         
             const result = await connection.query(`
                 SELECT * FROM products 
@@ -148,7 +148,7 @@ app.post("/purchase", async (req,res) => {
             }
         }
         const dados = validation();
-        console.log(dados)
+        
         if(dados) {
             let purchase = "";
             const purchaseBag = req.body.cart;
@@ -157,12 +157,13 @@ app.post("/purchase", async (req,res) => {
                 if(a.id < b.id) return -1;
                 return 0;
             });
+
             const productRemainingQuantity = {};
     
             purchaseBag.forEach(p => {
                 purchase +=`(${p.id},${dados.userId},NOW(),${p.orderQuantity}),`;
                 productRemainingQuantity[p.id] = p.orderQuantity;
-                if(p.instock < p.orderQuantity) {
+                if(p.inStock < p.orderQuantity) {
                     return res.sendStatus(422)
                 }
             });
@@ -182,14 +183,14 @@ app.post("/purchase", async (req,res) => {
     
             let productsInStock = "";
             result.rows.forEach((c,i) => {
-                productRemainingQuantity[c.id] = c.instock - productRemainingQuantity[c.id];
+                productRemainingQuantity[c.id] = c.inStock - productRemainingQuantity[c.id];
                 productsInStock += `(${Number(productRemainingQuantity[c.id])}),`
             });
     
             await purchaseBag.forEach(p => {
                 connection.query(`
                     UPDATE products 
-                    SET instock = ${productRemainingQuantity[p.id]}
+                    SET "inStock" = ${productRemainingQuantity[p.id]}
                     WHERE id = ${p.id}
                 `);
             });
